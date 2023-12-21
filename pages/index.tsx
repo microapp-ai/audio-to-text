@@ -36,15 +36,18 @@ const AudioToText: FC = () => {
     }
   }, []);
   const generateSummary = async (transcription: string) => {
-    const response = await fetch('/api/summarize', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: text,
-      }),
-    });
+    const response = await fetch(
+      'https://audio-to-text-psi.vercel.app/api/summarize',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: text,
+        }),
+      }
+    );
 
     const data = await response.json();
     console.log(data);
@@ -76,15 +79,18 @@ const AudioToText: FC = () => {
   };
   const getText = async (base64data: any) => {
     try {
-      const response = await fetch('/api/speechToText', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          base64data: base64data,
-        }),
-      }).then((res) => res.json());
+      const response = await fetch(
+        'https://audio-to-text-psi.vercel.app/api/speechToText',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            base64data: base64data,
+          }),
+        }
+      ).then((res) => res.json());
       const { text } = response;
       if (summarize) {
         generateSummary(text);

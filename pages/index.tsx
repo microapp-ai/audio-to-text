@@ -17,10 +17,7 @@ import {
   Checkbox,
 } from '@mantine/core';
 
-
-
 import { useRecorder } from 'react-microphone-recorder';
-
 
 const AudioToText: FC = () => {
   const [audioFileU, setaudioFileU] = useState<File | null>(null);
@@ -39,33 +36,19 @@ const AudioToText: FC = () => {
     }
   }, []);
   const generateSummary = async (transcription: string) => {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('/api/summarize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a helpful assistant that generates Summaries.',
-          },
-          {
-            role: 'user',
-            content: `Summarize the following text: ${transcription}`,
-          },
-        ],
-        model: 'gpt-3.5-turbo',
-        max_tokens: 3000,
-        temperature: 1,
-        stop: '',
+        text: text,
       }),
     });
 
     const data = await response.json();
     console.log(data);
-    const generatedSummary = data.choices[0].message.content;
+    const generatedSummary = data.summary;
     const words = generatedSummary.split(' ');
     var currenIndex = 0;
     var outputText = '';
@@ -82,44 +65,60 @@ const AudioToText: FC = () => {
     displayWord();
   };
 
+  const blobToBase64 = (blob: Blob, callback: (arg0: any) => void) => {
+    const reader = new FileReader();
+    reader.onload = function () {
+      const base64data = (reader.result as string)?.split(',')[1];
+      callback(base64data);
+    };
+
+    reader.readAsDataURL(blob);
+  };
+  const getText = async (base64data: any) => {
+    try {
+      const response = await fetch('/api/speechToText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          base64data: base64data,
+        }),
+      }).then((res) => res.json());
+      const { text } = response;
+      if (summarize) {
+        generateSummary(text);
+      }
+      setLoading(false);
+      const words = text.split(' ');
+      var currenIndex = 0;
+      var outputText = '';
+      const displayWord = () => {
+        if (words.length > currenIndex) {
+          setTimeout(() => {
+            outputText = outputText + ' ' + words[currenIndex];
+            setText(outputText);
+            currenIndex++;
+            displayWord();
+          }, 100);
+        }
+      };
+      displayWord();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleConvert = async () => {
     if (!audioFileU) {
       alert('Please upload audio file');
       return;
     }
-    const baseUrl = 'https://api.openai.com/v1/audio/transcriptions';
-    const headers = {
-      Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
-    };
-    const formData = new FormData();
-    formData.append('file', audioFileU as Blob);
-    formData.append('model', 'whisper-1');
     setLoading(true);
-    console.log('formData', formData);
-    const response = await fetch(baseUrl, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-    const data = await response.json();
-    if (summarize) {
-      generateSummary(data.text);
-    }
-    setLoading(false);
-    const words = data.text.split(' ');
-    var currenIndex = 0;
-    var outputText = '';
-    const displayWord = () => {
-      if (words.length > currenIndex) {
-        setTimeout(() => {
-          outputText = outputText + ' ' + words[currenIndex];
-          setText(outputText);
-          currenIndex++;
-          displayWord();
-        }, 100);
-      }
-    };
-    displayWord();
+    ////////////////////////////////////////////////////////////
+    ////////// LOGIC FOR REQUESTING AUDIO TO TEXT API //////////
+    blobToBase64(audioFileU, getText);
+    ////////////////////////////////////////////////////////////
   };
   const {
     startRecording,
@@ -453,9 +452,9 @@ const AudioToText: FC = () => {
                   data={
                     summarize
                       ? [
-                        { label: 'Transcription', value: 'transcription' },
-                        { label: 'Summary', value: 'summary' },
-                      ]
+                          { label: 'Transcription', value: 'transcription' },
+                          { label: 'Summary', value: 'summary' },
+                        ]
                       : [{ label: 'Transcription', value: 'transcription' }]
                   }
                   value={textShown}

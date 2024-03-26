@@ -1,5 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '12mb',
+    },
+  },
+};
+
 export default async function summarize(
   req: NextApiRequest,
   res: NextApiResponse

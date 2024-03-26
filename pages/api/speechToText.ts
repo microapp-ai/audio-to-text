@@ -12,6 +12,14 @@ function base64dataToBlob(base64data: string, mimeType: string): Blob {
   return new Blob([byteArray], { type: mimeType });
 }
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '12mb',
+    },
+  },
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

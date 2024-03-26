@@ -160,11 +160,32 @@ const AudioToText: FC = () => {
   }, [timeElapsed]);
 
   useEffect(() => {
-    if (audioFileU && audioFileU.size > 10000000) {
+    if (audioFileU && audioFileU.size > 11 * 1024 * 1024) {
       alert('File size should be less than 10MB');
       setaudioFileU(null);
     }
   }, [audioFileU]);
+
+  const [recordedFile, setRecordedFile] = useState(false);
+  useEffect(() => {
+    if (audioURL) {
+      setTimeout(() => {
+        setRecordedFile(true);
+      }, 300);
+    } else {
+      setRecordedFile(false);
+    }
+  }, [audioURL]);
+
+  const formatTime = (timeInSeconds: number) => {
+    const hours = Math.floor(timeInSeconds / 3600);
+    const minutes = Math.floor((timeInSeconds % 3600) / 60);
+    const seconds = timeInSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+      2,
+      '0'
+    )}:${String(seconds).padStart(2, '0')}`;
+  };
   return (
     <>
       <Grid h={'100%'} m={0}>
@@ -318,18 +339,18 @@ const AudioToText: FC = () => {
                   >
                     Max Limit: 3 minutes
                   </Text>
-
-                  <Slider
-                    value={audioLevel}
-                    color="violet"
-                    min={0}
-                    max={100}
-                    mx={{
-                      base: 8,
-                      md: 16,
+                  <Box
+                    style={{
+                      height: '5px',
+                      width: `${
+                        recordingState === 'recording' ? audioLevel : 2
+                      }%`,
+                      backgroundColor: '#3fff10',
+                      maxWidth: '90%',
+                      borderRadius: '5px',
                     }}
-                    my={8}
-                  />
+                    mx={'auto'}
+                  ></Box>
                   <Text
                     size={14}
                     weight={100}
@@ -339,9 +360,9 @@ const AudioToText: FC = () => {
                       md: 16,
                     }}
                   >
-                    Time Elapsed: {timeElapsed}
+                    Time Elapsed: {formatTime(timeElapsed)}
                   </Text>
-                  {audioURL && (
+                  {audioURL && recordedFile && (
                     <Box
                       mx={{
                         base: 8,
@@ -358,13 +379,17 @@ const AudioToText: FC = () => {
                     </Box>
                   )}
                   <Flex
-                    direction={'row'}
+                    direction={{
+                      base: 'column',
+                      lg: 'row',
+                    }}
                     justify={'space-between'}
                     align={'center'}
                     mx={{
                       base: 8,
                       md: 16,
                     }}
+                    gap={8}
                   >
                     <Button
                       color="green"
@@ -373,7 +398,12 @@ const AudioToText: FC = () => {
                         border: '1px solid',
                       }}
                       my={8}
-                      onClick={startRecording}
+                      onClick={() => {
+                        if (recordingState !== 'recording') {
+                          startRecording();
+                        }
+                      }}
+                      w={'100%'}
                     >
                       Start
                     </Button>
@@ -387,8 +417,11 @@ const AudioToText: FC = () => {
                       onClick={
                         recordingState === 'paused'
                           ? resumeRecording
-                          : pauseRecording
+                          : recordingState === 'recording'
+                          ? pauseRecording
+                          : () => {}
                       }
+                      w={'100%'}
                     >
                       {recordingState === 'paused' ? 'Resume' : 'Pause'}
                     </Button>
@@ -400,6 +433,7 @@ const AudioToText: FC = () => {
                       }}
                       my={8}
                       onClick={stopRecording}
+                      w={'100%'}
                     >
                       Stop
                     </Button>
@@ -411,12 +445,16 @@ const AudioToText: FC = () => {
                       }}
                       my={8}
                       onClick={() => {
-                        if (typeof resetRecording === 'function') {
-                          resetRecording();
+                        if (recordingState === 'recording') {
+                          stopRecording();
                         }
-                        setText('');
-                        setSummary('');
+                        setTimeout(() => {
+                          if (typeof resetRecording === 'function') {
+                            resetRecording();
+                          }
+                        }, 200);
                       }}
+                      w={'100%'}
                     >
                       Reset
                     </Button>

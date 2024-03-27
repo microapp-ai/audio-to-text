@@ -160,7 +160,7 @@ const AudioToText: FC = () => {
   }, [timeElapsed]);
 
   useEffect(() => {
-    if (audioFileU && audioFileU.size > 11 * 1024 * 1024) {
+    if (audioFileU && audioFileU.size > 10 * 1024 * 1024) {
       alert('File size should be less than 10MB');
       setaudioFileU(null);
     }

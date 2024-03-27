@@ -287,6 +287,7 @@ const AudioToText: FC = () => {
                     )}
                   </FileButton>
                   <FileInput
+                    clearable
                     iconWidth={'0px'}
                     accept=".flac,.mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm"
                     value={audioFileU}

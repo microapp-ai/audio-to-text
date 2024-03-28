@@ -495,7 +495,7 @@ const AudioToText: FC = () => {
               >
                 <SegmentedControl
                   data={
-                    summarize
+                    summarize && summary
                       ? [
                           { label: 'Transcription', value: 'transcription' },
                           { label: 'Summary', value: 'summary' },

@@ -536,17 +536,11 @@ const AudioToText: FC = () => {
                 <Textarea
                   value={textShown === 'transcription' ? text : summary}
                   w={'100%'}
-                  style={{
-                    borderTopLeftRadius: '0px',
-                    borderBottomLeftRadius: '0px',
-                  }}
-                  styles={{
-                    input: {
-                      backgroundColor: '#FDFDFD',
-                      border: 'none',
-                    },
-                  }}
+                  size="sm"
+                // weight={400}
+                  minRows={10}
                   autosize
+                  readOnly
                 />
               </ScrollArea>
             </Box>

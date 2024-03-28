@@ -26,7 +26,8 @@ export default async function summarize(
     return;
   }
 
-  const { text } = req.body;
+  const { text, language } = req.body;
+  console.log('Language: ', language);
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -42,7 +43,10 @@ export default async function summarize(
           },
           {
             role: 'user',
-            content: `Summarize the following text: ${text}`,
+            content:
+              `Summarize the following text` +
+              (language !== 'automatic' ? `use language:${language}.` : '') +
+              `text: ${text}\nSummary: `,
           },
         ],
         model: 'gpt-3.5-turbo',

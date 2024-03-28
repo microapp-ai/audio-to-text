@@ -40,8 +40,7 @@ export default async function handler(
   try {
     console.log('REQUEST RECEIVED');
     const { body } = req;
-    const { base64data } = body;
-
+    const { base64data, language } = body;
     if (!base64data) {
       return res
         .status(400)
@@ -52,7 +51,11 @@ export default async function handler(
     const formData = new FormData();
     formData.append('file', blob);
     formData.append('model', 'whisper-1');
+    if (language !== 'automatic') {
+      formData.append('language', language);
+    }
     console.log('formData', formData);
+
     const response = await fetch(
       'https://api.openai.com/v1/audio/transcriptions',
       {

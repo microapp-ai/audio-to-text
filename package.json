@@ -22,10 +22,12 @@
     "eslint": "8.33.0",
     "eslint-config-next": "13.4.13",
     "fs": "^0.0.1-security",
+    "geist": "^1.3.1",
     "next": "13.4.13",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-microphone-recorder": "^1.0.0",
+    "react-quill": "^2.0.0",
     "typescript": "5.0.4",
     "webpack": "5.88.2"
   },

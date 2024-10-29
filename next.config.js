@@ -3,6 +3,7 @@ const { NextFederationPlugin } = require('@module-federation/nextjs-mf');
 
 const nextConfig = {
   reactStrictMode: false,
+  transpilePackages: ['geist'],
   webpack: (config) => {
     config.plugins.push(
       new NextFederationPlugin({

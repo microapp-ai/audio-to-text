@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-
+import { GeistSans } from 'geist/font/sans';
 import {
   Grid,
   Box,
@@ -16,11 +16,49 @@ import {
   Slider,
   Checkbox,
   Select,
+  ColorSchemeProvider,
+  MantineProvider,
+  ColorScheme,
+  rem,
 } from '@mantine/core';
 
 import { useRecorder } from 'react-microphone-recorder';
+import { AudioRecorder } from './AudioRecorder';
+import { IconPencil } from '@tabler/icons-react';
+const QuillEditor = dynamic(() => import('react-quill'), {
+  ssr: false, // This ensures it's not loaded during server-side rendering
+});
+import 'react-quill/dist/quill.snow.css';
+import dynamic from 'next/dynamic';
 
-const AudioToText: FC = () => {
+type Language = 'en' | 'es' | 'pt';
+
+type HomeProps = {
+  theme?: string; // 'light' | 'dark'
+  lang?: Language; // 'en' | 'es' | 'pt'
+};
+
+const Home: React.FC<HomeProps> = (props) => {
+  const [app_theme, setAppTheme] = useState<string>(props.theme || 'light');
+  const toggleColorScheme = (value?: ColorScheme) => {
+    // console.log('Toggle color scheme', value);
+    setAppTheme(value === 'dark' ? 'dark' : 'light');
+  };
+  useEffect(() => {
+    if (props.theme) {
+      toggleColorScheme(props.theme === 'dark' ? 'dark' : 'light');
+    }
+  }, [props.theme]);
+  const [app_lang, setAppLang] = useState<'en' | 'es' | 'pt'>(
+    props.lang || 'en'
+  );
+  useEffect(() => {
+    // console.log('PROPS: ', props);
+    if (props.lang) {
+      setAppLang(props.lang);
+    }
+  }, [props.lang]);
+
   const [audioFileU, setaudioFileU] = useState<File | null>(null);
   const [text, setText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -233,38 +271,6 @@ const AudioToText: FC = () => {
     blobToBase64(audioFileU, getText);
     ////////////////////////////////////////////////////////////
   };
-  const {
-    startRecording,
-    pauseRecording,
-    stopRecording,
-    resetRecording,
-    resumeRecording,
-    audioFile,
-    audioURL,
-    timeElapsed,
-    isRecording,
-    audioLevel,
-    recordingState,
-  } = useRecorder();
-  const onStart = () => {
-    console.log('Recording started');
-  };
-
-  const onStop = (recordedBlob: any) => {
-    console.log('Recording stopped');
-  };
-  useEffect(() => {
-    if (audioURL && typeof audioFile !== 'undefined') {
-      console.log('audioURL', audioURL);
-      setaudioFileU(audioFile as File);
-    }
-  }, [audioURL]);
-
-  useEffect(() => {
-    if (timeElapsed == 60 * 3) {
-      stopRecording();
-    }
-  }, [timeElapsed]);
 
   useEffect(() => {
     if (audioFileU && audioFileU.size > 10 * 1024 * 1024) {
@@ -273,467 +279,463 @@ const AudioToText: FC = () => {
     }
   }, [audioFileU]);
 
-  const [recordedFile, setRecordedFile] = useState(false);
-  useEffect(() => {
-    if (audioURL) {
-      setTimeout(() => {
-        setRecordedFile(true);
-      }, 300);
-    } else {
-      setRecordedFile(false);
-    }
-  }, [audioURL]);
-
-  const formatTime = (timeInSeconds: number) => {
-    const hours = Math.floor(timeInSeconds / 3600);
-    const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = timeInSeconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
-      2,
-      '0'
-    )}:${String(seconds).padStart(2, '0')}`;
-  };
   return (
     <>
-      <Grid h={'100%'} m={0}>
-        <Grid.Col
-          sx={(theme) => ({
-            backgroundColor: '#FDFDFD',
-          })}
-          sm={12} // On small screens, take the full width
-          md={8} // On medium screens, take half of the width
+      <ColorSchemeProvider
+        colorScheme={app_theme === 'dark' ? 'dark' : 'light'}
+        toggleColorScheme={() => {}}
+      >
+        <MantineProvider
+          theme={{
+            colorScheme: app_theme === 'dark' ? 'dark' : 'light',
+            fontFamily: GeistSans.style.fontFamily,
+          }}
+          withGlobalStyles
+          withNormalizeCSS
         >
-          <Box
-            w={{
-              base: '100%',
-              md: '90%',
-            }}
-            sx={(theme) => ({
-              boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.165)',
-              backgroundColor: '#FFFFFF',
-              borderRadius: '15px',
-            })}
-            my={{
-              base: '5%',
-              md: '3%',
-            }}
-            mx={{
-              base: 0,
-              md: '5%',
-            }}
-            p={{
-              base: 8,
-              md: 16,
+          <style jsx global>{`
+            .ql-toolbar {
+              border: 1px solid ${app_theme === 'dark' ? '#2C2C30' : '#ccc'} !important;
+              border-radius: 25px 25px 0 0;
+            }
+            .ql-container {
+              border: 1px solid ${app_theme === 'dark' ? '#2C2C30' : '#ccc'} !important;
+              border-radius: 0 0 25px 25px;
+            }
+            .ql-editor {
+              min-height: 280px;
+            }
+            ${app_theme === 'dark'
+              ? `.ql-toolbar svg,
+.ql-toolbar rect,
+.ql-toolbar line,
+.ql-toolbar path,
+.ql-toolbar span {
+          /* fill: #ccc !important; */
+          stroke: #ccc !important;
+          color: #ccc !important; 
+        }`
+              : ''}
+
+            ::-webkit-scrollbar {
+              width: 8px;
+              height: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+              background: transparent; /* Background of the scrollbar track */
+            }
+
+            ::-webkit-scrollbar-thumb {
+              background-color: #888; /* Color of the scrollbar handle */
+              border-radius: 10px;
+              border: 3px solid transparent; /* Padding around the handle */
+              background-clip: padding-box;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+              background-color: #555; /* Darker color when hovered */
+            }
+          `}</style>
+          <Grid
+            py={48}
+            px={8}
+            w={'100%'}
+            mih={'100vh'}
+            style={{
+              backgroundColor: app_theme === 'dark' ? '#000' : '#fff',
             }}
           >
-            {inputType === 'file' && (
-              <>
-                <Text
-                  size={15}
-                  weight={700}
-                  mx={{
-                    base: 8,
-                    md: 16,
-                  }}
-                >
-                  Upload Audio or Video File
-                </Text>
-                <Text
-                  size={14}
-                  weight={100}
-                  color="gray"
-                  mx={{
-                    base: 8,
-                    md: 16,
-                  }}
-                >
-                  Select an audio or video file to convert to text. Supported
-                  formats are .flac, .mp3, .mp4, .mpeg, .mpga, .m4a, .ogg, .wav,
-                  .webm.
-                </Text>
-                <Text
-                  size={14}
-                  weight={100}
-                  color="gray"
-                  mb={8}
-                  mx={{
-                    base: 8,
-                    md: 16,
-                  }}
-                >
-                  Max Limit: 10MB
-                </Text>
-                <Flex
-                  my={8}
-                  mx={{
-                    base: 8,
-                    md: 16,
-                  }}
-                >
-                  <FileButton
-                    accept=".flac,.mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm"
-                    onChange={(file) => setaudioFileU(file)}
-                  >
-                    {(props) => (
-                      <Button
-                        {...props}
-                        variant="light"
-                        color="violet"
-                        size="sm"
-                        style={{
-                          border: '1px solid',
-                          borderTopRightRadius: '0px',
-                          borderBottomRightRadius: '0px',
-                          zIndex: 1,
-                        }}
-                        mr={'-4px'}
-                        w={'120px'}
-                      >
-                        Browse
-                      </Button>
-                    )}
-                  </FileButton>
-                  <FileInput
-                    clearable
-                    iconWidth={'0px'}
-                    accept=".flac,.mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm"
-                    value={audioFileU}
-                    onChange={(file) => setaudioFileU(file)}
-                    placeholder={'Select Audio File'}
-                    w={'100%'}
-                    maw={'calc(100% - 125px)'}
-                    size="sm"
-                    style={{
-                      borderTopLeftRadius: '0px',
-                      borderBottomLeftRadius: '0px',
-                    }}
-                  />
-                </Flex>
-              </>
-            )}
-            {inputType === 'record' && (
-              <>
-                <Box>
-                  <Text
-                    size={15}
-                    weight={700}
-                    mx={{
-                      base: 8,
-                      md: 16,
-                    }}
-                  >
-                    Record Audio
-                  </Text>
-                  <Text
-                    size={14}
-                    weight={100}
-                    color="gray"
-                    mx={{
-                      base: 8,
-                      md: 16,
-                    }}
-                  >
-                    Record audio using your microphone and convert it to text.
-                  </Text>
-                  <Text
-                    size={14}
-                    weight={100}
-                    color="gray"
-                    mb={8}
-                    mx={{
-                      base: 8,
-                      md: 16,
-                    }}
-                  >
-                    Max Limit: 3 minutes
-                  </Text>
-                  <Box
-                    style={{
-                      height: '5px',
-                      width: `${
-                        recordingState === 'recording' ? audioLevel : 2
-                      }%`,
-                      backgroundColor: '#3fff10',
-                      maxWidth: '90%',
-                      borderRadius: '5px',
-                    }}
-                    mx={'auto'}
-                  ></Box>
-                  <Text
-                    size={14}
-                    weight={100}
-                    mb={8}
-                    mx={{
-                      base: 8,
-                      md: 16,
-                    }}
-                  >
-                    Time Elapsed: {formatTime(timeElapsed)}
-                  </Text>
-                  {audioURL && recordedFile && (
-                    <Box
-                      mx={{
-                        base: 8,
-                        md: 16,
-                      }}
-                    >
-                      <audio
-                        style={{
-                          width: '100%',
-                        }}
-                        controls
-                        src={audioURL}
-                      />
-                    </Box>
-                  )}
-                  <Flex
-                    direction={{
-                      base: 'column',
-                      lg: 'row',
-                    }}
-                    justify={'space-between'}
-                    align={'center'}
-                    mx={{
-                      base: 8,
-                      md: 16,
-                    }}
-                    gap={8}
-                  >
-                    <Button
-                      color="green"
-                      variant="filled"
-                      style={{
-                        border: '1px solid',
-                      }}
-                      my={8}
-                      onClick={() => {
-                        if (recordingState !== 'recording') {
-                          startRecording();
-                        }
-                      }}
-                      w={'100%'}
-                    >
-                      Start
-                    </Button>
-                    <Button
-                      color="yellow"
-                      variant="filled"
-                      style={{
-                        border: '1px solid',
-                      }}
-                      my={8}
-                      onClick={
-                        recordingState === 'paused'
-                          ? resumeRecording
-                          : recordingState === 'recording'
-                          ? pauseRecording
-                          : () => {}
-                      }
-                      w={'100%'}
-                    >
-                      {recordingState === 'paused' ? 'Resume' : 'Pause'}
-                    </Button>
-                    <Button
-                      color="red"
-                      variant="light"
-                      style={{
-                        border: '1px solid',
-                      }}
-                      my={8}
-                      onClick={stopRecording}
-                      w={'100%'}
-                    >
-                      Stop
-                    </Button>
-                    <Button
-                      color="gray"
-                      variant="filled"
-                      style={{
-                        border: '1px solid',
-                      }}
-                      my={8}
-                      onClick={() => {
-                        if (recordingState === 'recording') {
-                          stopRecording();
-                        }
-                        setTimeout(() => {
-                          if (typeof resetRecording === 'function') {
-                            resetRecording();
-                          }
-                        }, 200);
-                      }}
-                      w={'100%'}
-                    >
-                      Reset
-                    </Button>
-                  </Flex>
-                </Box>
-              </>
-            )}
-          </Box>
-          {text && (
-            <Box
-              w={{
-                base: '100%',
-                md: '90%',
-              }}
-              sx={(theme) => ({
-                boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.165)',
-                backgroundColor: '#FFFFFF',
-                borderRadius: '15px',
+            <Grid.Col
+              sx={() => ({
+                borderRight: '1px solid',
+                borderColor: app_theme === 'dark' ? '#2C2C30' : '#C5C5C9',
               })}
-              my={{
-                base: '5%',
-                md: '3%',
-              }}
-              mx={{
-                base: 0,
-                md: '5%',
-              }}
-              p={{
+              sm={6}
+              md={6}
+              lg={6}
+              w={'100%'}
+              pl={{
                 base: 8,
-                md: 16,
+                md: 60,
+                lg: 60,
+              }}
+              pr={{
+                base: 8,
+                md: 24,
+                lg: 24,
               }}
             >
-              <Flex
-                direction={'row'}
-                justify={'space-between'}
-                align={'center'}
-              >
+              <Box w={{ base: '100%' }}>
                 <SegmentedControl
-                  data={
-                    summarize && summary
-                      ? [
-                          { label: 'Transcription', value: 'transcription' },
-                          { label: 'Summary', value: 'summary' },
-                        ]
-                      : [{ label: 'Transcription', value: 'transcription' }]
-                  }
-                  value={textShown}
-                  onChange={(value) => setTextShown(value as any)}
                   fullWidth
-                  color="violet"
-                  variant="light"
-                  my={8}
+                  radius={6}
+                  value={inputType}
+                  onChange={(value) => {
+                    setInputType(value as any);
+                  }}
+                  data={[
+                    {
+                      value: 'file',
+                      label: 'Upload File',
+                    },
+                    {
+                      value: 'record',
+                      label: 'Record Audio',
+                    },
+                  ]}
+                  styles={{
+                    controlActive: {
+                      backgroundColor:
+                        app_theme === 'dark' ? '#2C2C30' : '#DFDFE2',
+                    },
+                    root: {
+                      backgroundColor: 'transparent',
+                      border: '1px solid',
+                      borderColor: app_theme === 'dark' ? '#2C2C30' : '#DFDFE2',
+                    },
+                  }}
+                  mb={24}
                 />
-                <CopyButton
-                  value={textShown === 'transcription' ? text : summary}
-                >
-                  {({ copied, copy }) => (
-                    <Button
-                      w={90}
-                      m={{
-                        base: 8,
-                        md: 16,
+                {inputType === 'file' && (
+                  <>
+                    <Text size={'lg'} weight={700} mb={4}>
+                      Upload audio or video file
+                    </Text>
+                    <Text size={'sm'} weight={400} color="gray" mb={12}>
+                      Select an audio or video file to convert to text.
+                      Supported formats are .flac, .mp3, .mp4, .mpeg, .mpga,
+                      .m4a, .ogg, .wav, .webm. Max Limit: 10MB
+                    </Text>
+                    <Box
+                      style={{
+                        border:
+                          '1px solid ' +
+                          (app_theme === 'dark' ? '#2f2e2e' : '#CDCDCDFF'),
+                        borderRadius: '24px',
+                        padding: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
                       }}
-                      size="xs"
+                      mx={{
+                        base: 'auto',
+                        md: 0,
+                        lg: 0,
+                      }}
+                      // miw={350}
+                      // maw={300}
+                      mb={24}
+                    >
+                      <FileButton
+                        accept=".flac,.mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm"
+                        onChange={(file) => {
+                          setaudioFileU(file);
+                        }}
+                      >
+                        {(props) => (
+                          <Button
+                            {...props}
+                            size="sm"
+                            style={{
+                              borderRadius: '24px',
+                              zIndex: 1,
+                              // padding: '0px',
+                              color:
+                                app_theme === 'dark' ? '#CDCDCDFF' : '#141415',
+                              backgroundColor:
+                                app_theme === 'dark' ? '#141415' : '#EDEDEE',
+                            }}
+                            w={'120px'}
+                          >
+                            Browse
+                          </Button>
+                        )}
+                      </FileButton>
+                      <FileInput
+                        accept=".flac,.mp3,.mp4,.mpeg,.mpga,.m4a,.ogg,.wav,.webm"
+                        value={audioFileU}
+                        onChange={(file) => {
+                          setaudioFileU(file);
+                        }}
+                        w={'100%'}
+                        style={{
+                          border: 'none',
+                        }}
+                        styles={(theme) => ({
+                          input: {
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                          },
+                          placeholder: {
+                            paddingLeft: '5%',
+                          },
+                        })}
+                        placeholder={'No file selected'}
+                        clearable
+                      />
+                    </Box>
+                  </>
+                )}
+                {inputType === 'record' && (
+                  <AudioRecorder setaudioFileU={setaudioFileU} />
+                )}
+                <Select
+                  label="Language (OPTIONAL)"
+                  data={Object.keys(LANGUAGES).map((key) => {
+                    return {
+                      label: LANGUAGES[key as keyof typeof LANGUAGES],
+                      value: key,
+                    };
+                  })}
+                  size="md"
+                  radius={'xl'}
+                  searchable
+                  value={language}
+                  mt={24}
+                  color="dark"
+                  onChange={(val) => setLanguage(val as string)}
+                />
+                <Checkbox
+                  checked={summarize}
+                  color="dark"
+                  onChange={(event) =>
+                    setSummarize(event.currentTarget.checked)
+                  }
+                  label="Transcription Summary"
+                  mt={24}
+                  w={'100%'}
+                />
+                <Button
+                  leftIcon={<IconPencil />}
+                  onClick={handleConvert}
+                  loading={loading}
+                  radius={'xl'}
+                  variant={app_theme !== 'dark' ? 'filled' : 'outline'}
+                  color="dark"
+                  size="md"
+                  styles={(theme) => ({
+                    root: {
+                      color: app_theme !== 'dark' ? '#ffffff' : '#000000',
+                      backgroundColor:
+                        app_theme !== 'dark' ? '#000000' : '#ffff',
+                      border: 0,
+                      height: rem(42),
+                      paddingLeft: rem(20),
+                      paddingRight: rem(20),
+                      '&:hover': {
+                        backgroundColor:
+                          app_theme === 'dark' ? '#808080' : '#333333',
+                      },
+                      '&:disabled': {
+                        color: app_theme === 'dark' ? '#76767F' : '#909098',
+                        backgroundColor:
+                          app_theme === 'dark' ? '#2C2C30' : '#DFDFE2',
+                      },
+                    },
+                  })}
+                  mt={24}
+                  disabled={!audioFileU}
+                >
+                  Transcribe
+                </Button>
+              </Box>
+              {/* {text && (
+                <Box
+                  w={{
+                    base: '100%',
+                    md: '90%',
+                  }}
+                  sx={(theme) => ({
+                    boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.165)',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '15px',
+                  })}
+                  my={{
+                    base: '5%',
+                    md: '3%',
+                  }}
+                  mx={{
+                    base: 0,
+                    md: '5%',
+                  }}
+                  p={{
+                    base: 8,
+                    md: 16,
+                  }}
+                >
+                  <Flex
+                    direction={'row'}
+                    justify={'space-between'}
+                    align={'center'}
+                  >
+                    <SegmentedControl
+                      data={
+                        summarize && summary
+                          ? [
+                            { label: 'Transcription', value: 'transcription' },
+                            { label: 'Summary', value: 'summary' },
+                          ]
+                          : [{ label: 'Transcription', value: 'transcription' }]
+                      }
+                      value={textShown}
+                      onChange={(value) => setTextShown(value as any)}
+                      fullWidth
                       color="violet"
                       variant="light"
-                      style={{
-                        border: '1px solid',
-                      }}
-                      onClick={copy}
+                      my={8}
+                    />
+                    <CopyButton
+                      value={textShown === 'transcription' ? text : summary}
                     >
-                      {copied ? 'Copied' : 'Copy'}
-                    </Button>
-                  )}
-                </CopyButton>
-              </Flex>
-              <ScrollArea h={'60vh'}>
-                <Textarea
-                  value={textShown === 'transcription' ? text : summary}
-                  w={'100%'}
-                  size="sm"
-                  // weight={400}
-                  minRows={10}
-                  autosize
-                  readOnly
+                      {({ copied, copy }) => (
+                        <Button
+                          w={90}
+                          m={{
+                            base: 8,
+                            md: 16,
+                          }}
+                          size="xs"
+                          color="violet"
+                          variant="light"
+                          style={{
+                            border: '1px solid',
+                          }}
+                          onClick={copy}
+                        >
+                          {copied ? 'Copied' : 'Copy'}
+                        </Button>
+                      )}
+                    </CopyButton>
+                  </Flex>
+                  <ScrollArea h={'60vh'}>
+                    <Textarea
+                      value={textShown === 'transcription' ? text : summary}
+                      w={'100%'}
+                      size="sm"
+                      // weight={400}
+                      minRows={10}
+                      autosize
+                      readOnly
+                    />
+                  </ScrollArea>
+                </Box>
+              )} */}
+            </Grid.Col>
+            <Grid.Col
+              sx={() => ({
+                // borderRight: '1px solid #D9D9D9',
+                '@media (min-width: 768px)': {
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                },
+              })}
+              sm={6}
+              md={6}
+              lg={6}
+              w={'100%'}
+              // mt={48}
+              pr={{
+                base: 8,
+                sm: 8,
+                md: 60,
+                lg: 60,
+              }}
+              pl={{
+                base: 8,
+                sm: 8,
+                md: 24,
+                lg: 24,
+              }}
+              mx={'auto'}
+            >
+              <Box w={'100%'}>
+                <SegmentedControl
+                  fullWidth
+                  radius={6}
+                  value={textShown}
+                  onChange={(value) => {
+                    setTextShown(value as 'transcription' | 'summary');
+                  }}
+                  defaultValue="transcription"
+                  data={[
+                    {
+                      value: 'transcription',
+                      label: 'Transcription',
+                    },
+                    {
+                      value: 'summary',
+                      label: 'Summary',
+                    },
+                  ]}
+                  styles={{
+                    controlActive: {
+                      backgroundColor:
+                        app_theme === 'dark' ? '#2C2C30' : '#DFDFE2',
+                    },
+                    root: {
+                      backgroundColor: 'transparent',
+                      border: '1px solid',
+                      borderColor: app_theme === 'dark' ? '#2C2C30' : '#DFDFE2',
+                    },
+                  }}
+                  mb={24}
                 />
-              </ScrollArea>
-            </Box>
-          )}
-        </Grid.Col>
-        <Grid.Col
-          sx={(theme) => ({
-            backgroundColor: '#FDFDFD',
-          })}
-          sm={12} // On small screens, take the full width
-          md={4} // On medium screens, take half of the width
-        >
-          <Box
-            m={{
-              base: 0,
-              md: '3%',
-            }}
-            mt={{
-              base: '110px',
-              md: '5%',
-            }}
-            bg={'#f5f7f9'}
-            p={16}
-            style={{
-              boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.165)',
-              backgroundColor: '#FFFFFF',
-              borderRadius: '15px',
-            }}
-          >
-            <Flex direction={'column'}>
-              <SegmentedControl
-                color="violet"
-                variant="light"
-                data={[
-                  { label: 'Upload Audio File', value: 'file' },
-                  { label: 'Record Audio', value: 'record' },
-                ]}
-                fullWidth
-                orientation={windowWidth > 768 ? 'horizontal' : 'vertical'}
-                value={inputType}
-                onChange={(value) => setInputType(value as any)}
-                my={8}
-              />
-              <Select
-                label="Language (OPTIONAL)"
-                data={Object.keys(LANGUAGES).map((key) => {
-                  return {
-                    label: LANGUAGES[key as keyof typeof LANGUAGES],
-                    value: key,
-                  };
-                })}
-                searchable
-                value={language}
-                onChange={(val) => setLanguage(val as string)}
-              />
-              <Checkbox
-                checked={summarize}
-                color="violet"
-                onChange={(event) => setSummarize(event.currentTarget.checked)}
-                label="Transcription Summary"
-                my={8}
-                w={'100%'}
-              />
-
-              <Button
-                color="violet"
-                variant="light"
-                style={{
-                  border: '1px solid',
-                }}
-                w={'100%'}
-                my={8}
-                onClick={handleConvert}
-                loading={loading}
-              >
-                Convert
-              </Button>
-              <Text size={14} weight={100} color="gray" ml={8}>
-                {loading && 'Please Do not refresh the page while converting'}
-              </Text>
-            </Flex>
-          </Box>
-        </Grid.Col>
-      </Grid>
+                {!loading && text === '' && (
+                  <Text size={'md'} weight={100} color="gray" mb={8}>
+                    Your audio {textShown} will appear here.
+                  </Text>
+                )}
+                <Text size={14} weight={100} color="gray" ml={8}>
+                  {loading &&
+                    'Please do not refresh the page while transcribing'}
+                </Text>
+                {!loading && text && (
+                  <>
+                    <QuillEditor
+                      value={textShown === 'transcription' ? text : summary}
+                      theme="snow"
+                      onChange={(value) => {
+                        if (textShown === 'transcription') {
+                          setText(value);
+                        } else {
+                          setSummary(value);
+                        }
+                      }}
+                      id={'output_box'}
+                      style={{
+                        borderRadius: '25px',
+                      }}
+                      modules={{
+                        toolbar: [
+                          [{ font: [] }],
+                          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                          [{ size: ['small', false, 'large', 'huge'] }], // text size options
+                          ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+                          // [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+                          // [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+                          // ['blockquote', 'code-block'],
+                          [{ list: 'ordered' }, { list: 'bullet' }],
+                          // [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+                          // [{ direction: 'rtl' }], // text direction
+                          [
+                            {
+                              align: [],
+                            },
+                          ],
+                          // ['link', 'image', 'video'],
+                          // ['clean'], // remove formatting button
+                        ],
+                      }}
+                    />
+                  </>
+                )}
+              </Box>
+            </Grid.Col>
+          </Grid>
+        </MantineProvider>
+      </ColorSchemeProvider>
     </>
   );
 };
 
-export default AudioToText;
+export default Home;

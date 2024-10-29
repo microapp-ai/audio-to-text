@@ -9,8 +9,6 @@ import {
 } from '@tabler/icons-react';
 import { GrayDots } from './GrayDots';
 
-type Language = 'en' | 'es' | 'pt';
-
 interface AudioPlayerProps {
   audioUrl: string;
   totalDuration: number;

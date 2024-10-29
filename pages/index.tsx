@@ -39,7 +39,7 @@ type HomeProps = {
 };
 
 const Home: React.FC<HomeProps> = (props) => {
-  const [app_theme, setAppTheme] = useState<string>(props.theme || 'light');
+  const [app_theme, setAppTheme] = useState<string>(props.theme || 'dark');
   const toggleColorScheme = (value?: ColorScheme) => {
     // console.log('Toggle color scheme', value);
     setAppTheme(value === 'dark' ? 'dark' : 'light');
@@ -377,11 +377,11 @@ const Home: React.FC<HomeProps> = (props) => {
                   data={[
                     {
                       value: 'file',
-                      label: 'Upload File',
+                      label: translations[app_lang].UPLOAD_FILE,
                     },
                     {
                       value: 'record',
-                      label: 'Record Audio',
+                      label: translations[app_lang].RECORD_AUDIO,
                     },
                   ]}
                   styles={{
@@ -400,12 +400,17 @@ const Home: React.FC<HomeProps> = (props) => {
                 {inputType === 'file' && (
                   <>
                     <Text size={'lg'} weight={700} mb={4}>
-                      Upload audio or video file
+                      {translations[app_lang].UPLOAD_LABEL}
                     </Text>
-                    <Text size={'sm'} weight={400} color="gray" mb={12}>
-                      Select an audio or video file to convert to text.
-                      Supported formats are .flac, .mp3, .mp4, .mpeg, .mpga,
-                      .m4a, .ogg, .wav, .webm. Max Limit: 10MB
+                    <Text
+                      size={'sm'}
+                      weight={300}
+                      style={{
+                        color: app_theme === 'dark' ? '#CCCCD4FF' : '#909098',
+                      }}
+                      mb={12}
+                    >
+                      {translations[app_lang].SUPPORTED_FORMATS}
                     </Text>
                     <Box
                       style={{
@@ -447,7 +452,7 @@ const Home: React.FC<HomeProps> = (props) => {
                             }}
                             w={'120px'}
                           >
-                            Browse
+                            {translations[app_lang].BROWSE}
                           </Button>
                         )}
                       </FileButton>
@@ -470,17 +475,21 @@ const Home: React.FC<HomeProps> = (props) => {
                             paddingLeft: '5%',
                           },
                         })}
-                        placeholder={'No file selected'}
+                        placeholder={translations[app_lang].AUDIO_PLACEHOLDER}
                         clearable
                       />
                     </Box>
                   </>
                 )}
                 {inputType === 'record' && (
-                  <AudioRecorder setaudioFileU={setaudioFileU} />
+                  <AudioRecorder
+                    setaudioFileU={setaudioFileU}
+                    theme={app_theme}
+                    lang={app_lang}
+                  />
                 )}
                 <Select
-                  label="Language (OPTIONAL)"
+                  label={<Text mb={8}>Language (OPTIONAL)</Text>}
                   data={Object.keys(LANGUAGES).map((key) => {
                     return {
                       label: LANGUAGES[key as keyof typeof LANGUAGES],
@@ -501,7 +510,7 @@ const Home: React.FC<HomeProps> = (props) => {
                   onChange={(event) =>
                     setSummarize(event.currentTarget.checked)
                   }
-                  label="Transcription Summary"
+                  label={translations[app_lang].TRANSCRIPTION_SUMMARY}
                   mt={24}
                   w={'100%'}
                 />
@@ -536,90 +545,9 @@ const Home: React.FC<HomeProps> = (props) => {
                   mt={24}
                   disabled={!audioFileU}
                 >
-                  Transcribe
+                  {translations[app_lang].TRANSCRIBE}
                 </Button>
               </Box>
-              {/* {text && (
-                <Box
-                  w={{
-                    base: '100%',
-                    md: '90%',
-                  }}
-                  sx={(theme) => ({
-                    boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.165)',
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '15px',
-                  })}
-                  my={{
-                    base: '5%',
-                    md: '3%',
-                  }}
-                  mx={{
-                    base: 0,
-                    md: '5%',
-                  }}
-                  p={{
-                    base: 8,
-                    md: 16,
-                  }}
-                >
-                  <Flex
-                    direction={'row'}
-                    justify={'space-between'}
-                    align={'center'}
-                  >
-                    <SegmentedControl
-                      data={
-                        summarize && summary
-                          ? [
-                            { label: 'Transcription', value: 'transcription' },
-                            { label: 'Summary', value: 'summary' },
-                          ]
-                          : [{ label: 'Transcription', value: 'transcription' }]
-                      }
-                      value={textShown}
-                      onChange={(value) => setTextShown(value as any)}
-                      fullWidth
-                      color="violet"
-                      variant="light"
-                      my={8}
-                    />
-                    <CopyButton
-                      value={textShown === 'transcription' ? text : summary}
-                    >
-                      {({ copied, copy }) => (
-                        <Button
-                          w={90}
-                          m={{
-                            base: 8,
-                            md: 16,
-                          }}
-                          size="xs"
-                          color="violet"
-                          variant="light"
-                          style={{
-                            border: '1px solid',
-                          }}
-                          onClick={copy}
-                        >
-                          {copied ? 'Copied' : 'Copy'}
-                        </Button>
-                      )}
-                    </CopyButton>
-                  </Flex>
-                  <ScrollArea h={'60vh'}>
-                    <Textarea
-                      value={textShown === 'transcription' ? text : summary}
-                      w={'100%'}
-                      size="sm"
-                      // weight={400}
-                      minRows={10}
-                      autosize
-                      readOnly
-                    />
-                  </ScrollArea>
-                </Box>
-              )} */}
             </Grid.Col>
             <Grid.Col
               sx={() => ({
@@ -660,11 +588,11 @@ const Home: React.FC<HomeProps> = (props) => {
                   data={[
                     {
                       value: 'transcription',
-                      label: 'Transcription',
+                      label: translations[app_lang].TRANSCRIPTION_LABEL,
                     },
                     {
                       value: 'summary',
-                      label: 'Summary',
+                      label: translations[app_lang].SUMMARY_LABEL,
                     },
                   ]}
                   styles={{
@@ -681,13 +609,28 @@ const Home: React.FC<HomeProps> = (props) => {
                   mb={24}
                 />
                 {!loading && text === '' && (
-                  <Text size={'md'} weight={100} color="gray" mb={8}>
-                    Your audio {textShown} will appear here.
+                  <Text
+                    size={'md'}
+                    weight={300}
+                    style={{
+                      color: app_theme === 'dark' ? '#CCCCD4FF' : '#909098',
+                    }}
+                    mb={8}
+                  >
+                    {textShown === 'transcription'
+                      ? translations[app_lang].YOUR_AUDIO_TRANSCRIPTION
+                      : translations[app_lang].YOUR_AUDIO_SUMMARY}
                   </Text>
                 )}
-                <Text size={14} weight={100} color="gray" ml={8}>
-                  {loading &&
-                    'Please do not refresh the page while transcribing'}
+                <Text
+                  size={14}
+                  weight={300}
+                  style={{
+                    color: app_theme === 'dark' ? '#CCCCD4FF' : '#909098',
+                  }}
+                  ml={8}
+                >
+                  {loading && translations[app_lang].PLEASE_DO_NOT_REFRESH}
                 </Text>
                 {!loading && text && (
                   <>
@@ -739,3 +682,59 @@ const Home: React.FC<HomeProps> = (props) => {
 };
 
 export default Home;
+
+const translations = {
+  en: {
+    UPLOAD_LABEL: 'Upload audio or video file',
+    SUPPORTED_FORMATS:
+      'Supported formats are .flac, .mp3, .mp4, .mpeg, .mpga, .m4a, .ogg, .wav, .webm. Max Limit: 10MB',
+    BROWSE: 'Browse',
+    LANGUAGE_LABEL: 'Language (OPTIONAL)',
+    TRANSCRIPTION_SUMMARY: 'Transcription Summary',
+    TRANSCRIBE: 'Transcribe',
+    TRANSCRIPTION_LABEL: 'Transcription',
+    SUMMARY_LABEL: 'Summary',
+    AUDIO_PLACEHOLDER: 'No file selected',
+    YOUR_AUDIO_TRANSCRIPTION: 'Your audio transcription will appear here.',
+    YOUR_AUDIO_SUMMARY: 'Your audio summary will appear here.',
+    PLEASE_DO_NOT_REFRESH: 'Please do not refresh the page while transcribing',
+    UPLOAD_FILE: 'Upload file',
+    RECORD_AUDIO: 'Record audio',
+  },
+  es: {
+    UPLOAD_LABEL: 'Sube un archivo de audio o video',
+    SUPPORTED_FORMATS:
+      'Los formatos compatibles son .flac, .mp3, .mp4, .mpeg, .mpga, .m4a, .ogg, .wav, .webm. Límite máximo: 10MB',
+    BROWSE: 'Explorar',
+    LANGUAGE_LABEL: 'Idioma (OPCIONAL)',
+    TRANSCRIPTION_SUMMARY: 'Resumen de la transcripción',
+    TRANSCRIBE: 'Transcribir',
+    TRANSCRIPTION_LABEL: 'Transcripción',
+    SUMMARY_LABEL: 'Resumen',
+    AUDIO_PLACEHOLDER: 'No se ha seleccionado ningún archivo',
+    YOUR_AUDIO_TRANSCRIPTION: 'Su transcripción de audio aparecerá aquí.',
+    YOUR_AUDIO_SUMMARY: 'Su resumen de audio aparecerá aquí.',
+    PLEASE_DO_NOT_REFRESH:
+      'Por favor, no actualice la página mientras transcribe',
+    UPLOAD_FILE: 'Subir archivo',
+    RECORD_AUDIO: 'Grabar audio',
+  },
+  pt: {
+    UPLOAD_LABEL: 'Carregar arquivo de áudio ou vídeo',
+    SUPPORTED_FORMATS:
+      'Os formatos suportados são .flac, .mp3, .mp4, .mpeg, .mpga, .m4a, .ogg, .wav, .webm. Limite máximo: 10MB',
+    BROWSE: 'Procurar',
+    LANGUAGE_LABEL: 'Idioma (OPCIONAL)',
+    TRANSCRIPTION_SUMMARY: 'Resumo da transcrição',
+    TRANSCRIBE: 'Transcrever',
+    TRANSCRIPTION_LABEL: 'Transcrição',
+    SUMMARY_LABEL: 'Resumo',
+    AUDIO_PLACEHOLDER: 'Nenhum arquivo selecionado',
+    YOUR_AUDIO_TRANSCRIPTION: 'Sua transcrição de áudio aparecerá aqui.',
+    YOUR_AUDIO_SUMMARY: 'Seu resumo de áudio aparecerá aqui.',
+    PLEASE_DO_NOT_REFRESH:
+      'Por favor, não atualize a página enquanto transcreve',
+    UPLOAD_FILE: 'Carregar arquivo',
+    RECORD_AUDIO: 'Gravar áudio',
+  },
+};

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export const GrayDots = () => {
+const GrayDots = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -36,3 +36,4 @@ export const GrayDots = () => {
     />
   );
 };
+export default GrayDots;

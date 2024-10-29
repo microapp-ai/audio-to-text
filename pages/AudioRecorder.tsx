@@ -7,7 +7,7 @@ import {
   IconReload,
   IconSquare,
 } from '@tabler/icons-react';
-import { GrayDots } from './GrayDots';
+import GrayDots from './GrayDots';
 
 type Language = 'en' | 'es' | 'pt';
 
@@ -17,7 +17,7 @@ interface AudioRecorderProps {
   lang?: Language; // 'en' | 'es' | 'pt'
 }
 
-export const AudioRecorder: React.FC<AudioRecorderProps> = (props) => {
+const AudioRecorder: React.FC<AudioRecorderProps> = (props) => {
   const { setaudioFileU } = props;
   const [app_theme, setAppTheme] = useState<string>(props.theme || 'light');
   const toggleColorScheme = (value?: ColorScheme) => {
@@ -395,6 +395,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = (props) => {
   );
 };
 
+export default AudioRecorder;
 const translations = {
   en: {
     recordingLimit: 'Recording limit is 3 minutes',

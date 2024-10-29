@@ -7,7 +7,7 @@ import {
   IconRewindBackward10,
   IconReload,
 } from '@tabler/icons-react';
-import { GrayDots } from './GrayDots';
+import GrayDots from './GrayDots';
 
 interface AudioPlayerProps {
   audioUrl: string;

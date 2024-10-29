@@ -23,7 +23,7 @@ import {
 } from '@mantine/core';
 
 import { useRecorder } from 'react-microphone-recorder';
-import { AudioRecorder } from './AudioRecorder';
+import AudioRecorder from './AudioRecorder';
 import { IconPencil } from '@tabler/icons-react';
 const QuillEditor = dynamic(() => import('react-quill'), {
   ssr: false, // This ensures it's not loaded during server-side rendering

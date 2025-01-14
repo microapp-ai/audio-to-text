@@ -342,6 +342,7 @@ const Home: React.FC<HomeProps> = (props) => {
             px={8}
             w={'100%'}
             mih={'100vh'}
+            m={0}
             style={{
               backgroundColor: app_theme === 'dark' ? '#000' : '#fff',
             }}
@@ -489,7 +490,7 @@ const Home: React.FC<HomeProps> = (props) => {
                   />
                 )}
                 <Select
-                  label={<Text mb={8}>Language (OPTIONAL)</Text>}
+                  label={<Text mb={8}>Language</Text>}
                   data={Object.keys(LANGUAGES).map((key) => {
                     return {
                       label: LANGUAGES[key as keyof typeof LANGUAGES],
@@ -692,7 +693,7 @@ const translations = {
     LANGUAGE_LABEL: 'Language (OPTIONAL)',
     TRANSCRIPTION_SUMMARY: 'Transcription Summary',
     TRANSCRIBE: 'Transcribe',
-    TRANSCRIPTION_LABEL: 'Transcription',
+    TRANSCRIPTION_LABEL: 'Generate transcription summary',
     SUMMARY_LABEL: 'Summary',
     AUDIO_PLACEHOLDER: 'No file selected',
     YOUR_AUDIO_TRANSCRIPTION: 'Your audio transcription will appear here.',
@@ -709,7 +710,7 @@ const translations = {
     LANGUAGE_LABEL: 'Idioma (OPCIONAL)',
     TRANSCRIPTION_SUMMARY: 'Resumen de la transcripción',
     TRANSCRIBE: 'Transcribir',
-    TRANSCRIPTION_LABEL: 'Transcripción',
+    TRANSCRIPTION_LABEL: 'Generar resumen de transcripción',
     SUMMARY_LABEL: 'Resumen',
     AUDIO_PLACEHOLDER: 'No se ha seleccionado ningún archivo',
     YOUR_AUDIO_TRANSCRIPTION: 'Su transcripción de audio aparecerá aquí.',
@@ -727,7 +728,7 @@ const translations = {
     LANGUAGE_LABEL: 'Idioma (OPCIONAL)',
     TRANSCRIPTION_SUMMARY: 'Resumo da transcrição',
     TRANSCRIBE: 'Transcrever',
-    TRANSCRIPTION_LABEL: 'Transcrição',
+    TRANSCRIPTION_LABEL: 'Gerar resumo da transcrição',
     SUMMARY_LABEL: 'Resumo',
     AUDIO_PLACEHOLDER: 'Nenhum arquivo selecionado',
     YOUR_AUDIO_TRANSCRIPTION: 'Sua transcrição de áudio aparecerá aqui.',
